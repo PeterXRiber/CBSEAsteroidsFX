@@ -26,7 +26,7 @@ public class EnemyControlSystem implements IEntityProcessingService{
             double changeX = Math.cos(Math.toRadians(enemy.getRotation()));
             double changeY = Math.sin(Math.toRadians(enemy.getRotation()));
             // Changes speed of enemy
-            double speed = 1.5;
+            double speed = 3;
             enemy.setX(enemy.getX() + changeX * speed);
             enemy.setY(enemy.getY() + changeY * speed);
 
