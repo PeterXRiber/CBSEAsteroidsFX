@@ -19,13 +19,16 @@ public class EnemyControlSystem implements IEntityProcessingService{
 
     @Override
     public void process(GameData gameData, World world) {
+
         for (Entity enemy : world.getEntities(Enemy.class)) {
-                enemy.setRotation(Math.random() * 25);
+                enemy.setRotation(Math.random());
 
             double changeX = Math.cos(Math.toRadians(enemy.getRotation()));
             double changeY = Math.sin(Math.toRadians(enemy.getRotation()));
-            enemy.setX(enemy.getX() + changeX);
-            enemy.setY(enemy.getY() + changeY);
+            // Changes speed of enemy
+            double speed = 1.5;
+            enemy.setX(enemy.getX() + changeX * speed);
+            enemy.setY(enemy.getY() + changeY * speed);
 
             getBulletSPIs().stream().findFirst().ifPresent(
                     spi -> {world.addEntity(spi.createBullet(enemy, gameData));}

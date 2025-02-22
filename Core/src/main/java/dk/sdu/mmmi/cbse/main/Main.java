@@ -24,8 +24,11 @@ import javafx.stage.Stage;
 public class Main extends Application {
 
     private final GameData gameData = new GameData();
+
     private final World world = new World();
+
     private final Map<Entity, Polygon> polygons = new ConcurrentHashMap<>();
+
     private final Pane gameWindow = new Pane();
 
     public static void main(String[] args) {
@@ -34,8 +37,11 @@ public class Main extends Application {
 
     @Override
     public void start(Stage window) throws Exception {
+
         Text text = new Text(10, 20, "Destroyed asteroids: 0");
+
         gameWindow.setPrefSize(gameData.getDisplayWidth(), gameData.getDisplayHeight());
+
         gameWindow.getChildren().add(text);
 
         Scene scene = new Scene(gameWindow);
