@@ -1,14 +1,15 @@
 package dk.sdu.mmmi.cbse.enemysystem;
 
-import dk.sdu.mmmi.cbse.common.bullet.Bullet;
 import dk.sdu.mmmi.cbse.common.bullet.BulletSPI;
 import dk.sdu.mmmi.cbse.common.data.Entity;
 import dk.sdu.mmmi.cbse.common.data.GameData;
-import dk.sdu.mmmi.cbse.common.data.GameKeys;
 import dk.sdu.mmmi.cbse.common.data.World;
-
-
+import dk.sdu.mmmi.cbse.common.data.entityparts.LifePart;
+import dk.sdu.mmmi.cbse.common.data.entityparts.MovingPart;
+import dk.sdu.mmmi.cbse.common.data.entityparts.PositionPart;
+import dk.sdu.mmmi.cbse.common.enemy.Enemy;
 import dk.sdu.mmmi.cbse.common.services.IEntityProcessingService;
+import java.util.Random;
 
 import java.util.Collection;
 import java.util.ServiceLoader;
@@ -21,40 +22,63 @@ public class EnemyControlSystem implements IEntityProcessingService{
     public void process(GameData gameData, World world) {
 
         for (Entity enemy : world.getEntities(Enemy.class)) {
-                enemy.setRotation(Math.random());
+            PositionPart positionPart = enemy.getPart(PositionPart.class);
+            MovingPart movingPart = enemy.getPart(MovingPart.class);
+            LifePart lifePart = enemy.getPart(LifePart.class);
 
-            double changeX = Math.cos(Math.toRadians(enemy.getRotation()));
-            double changeY = Math.sin(Math.toRadians(enemy.getRotation()));
-            // Changes speed of enemy
-            double speed = 3;
-            enemy.setX(enemy.getX() + changeX * speed);
-            enemy.setY(enemy.getY() + changeY * speed);
+            Random rand = new Random();
 
-            getBulletSPIs().stream().findFirst().ifPresent(
-                    spi -> {world.addEntity(spi.createBullet(enemy, gameData));}
-            );
+            float rng = rand.nextFloat();
 
-
-            if (enemy.getX() < 0) {
-                enemy.setX(1);
+            if (rng > 0.1f && rng < 0.9f) {
+                movingPart.setUp(true);
             }
 
-            if (enemy.getX() > gameData.getDisplayWidth()) {
-                enemy.setX(gameData.getDisplayWidth()-1);
+            if (rng < 0.2f) {
+                movingPart.setLeft(true);
             }
 
-            if (enemy.getY() < 0) {
-                enemy.setY(1);
+            if (rng > 0.8f) {
+                movingPart.setRight(true);
             }
 
-            if (enemy.getY() > gameData.getDisplayHeight()) {
-                enemy.setY(gameData.getDisplayHeight()-1);
-            }
+            movingPart.process(gameData, enemy);
+            positionPart.process(gameData, enemy);
+            lifePart.process(gameData, enemy);
 
+            updateShape(enemy);
 
+            movingPart.setRight(false);
+            movingPart.setLeft(false);
+            movingPart.setUp(false);
         }
     }
 
+    private void updateShape(Entity entity) {
+        float[] shapex = new float[4];
+        float[] shapey = new float[4];
+        PositionPart positionPart = entity.getPart(PositionPart.class);
+        float x = positionPart.getX();
+        float y = positionPart.getY();
+        float radians = positionPart.getRadians();
+
+        shapex[0] = (float) (x + Math.cos(radians) * entity.getRadius());
+        shapey[0] = (float) (y + Math.sin(radians) * entity.getRadius());
+
+        shapex[1] = (float) (x + Math.cos(radians - 4 * 3.1415f / 5) * entity.getRadius());
+        shapey[1] = (float) (y + Math.sin(radians - 4 * 3.1145f / 5) * entity.getRadius());
+
+        shapex[2] = (float) (x + Math.cos(radians + 3.1415f) * entity.getRadius() * 0.5);
+        shapey[2] = (float) (y + Math.sin(radians + 3.1415f) * entity.getRadius() * 0.5);
+
+        shapex[3] = (float) (x + Math.cos(radians + 4 * 3.1415f / 5) * entity.getRadius());
+        shapey[3] = (float) (y + Math.sin(radians + 4 * 3.1415f / 5) * entity.getRadius());
+
+        entity.setShapeX(shapex);
+        entity.setShapeY(shapey);
+    }
+
+    // MULIG FEJL HER?
     private Collection<? extends BulletSPI> getBulletSPIs() {
         return ServiceLoader.load(BulletSPI.class).stream().map(ServiceLoader.Provider::get).collect(toList());
     }
